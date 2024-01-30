@@ -1,4 +1,4 @@
-import { component$, useSignal, $, useTask$, useVisibleTask$ } from '@builder.io/qwik';
+import { component$, useSignal, $, useTask$ } from '@builder.io/qwik';
 import type { DocumentHead } from '@builder.io/qwik-city';
 
 import { Image, Alert } from '~/components/shared';
@@ -16,7 +16,7 @@ export default component$(() => {
   });
 
   const answerOrderDefine = $(() => {
-    let order = [0, 1, 2, 3];
+    const order = [0, 1, 2, 3];
     return order.sort(() => Math.random() - 0.5);
   });
 
