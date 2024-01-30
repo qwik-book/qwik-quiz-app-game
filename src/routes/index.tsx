@@ -1,10 +1,11 @@
-import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { component$, useSignal, $, useTask$, useVisibleTask$ } from '@builder.io/qwik';
+import type { DocumentHead } from '@builder.io/qwik-city';
 
-import { Image, Alert } from "~/components/shared";
-import { QUESTIONS } from "~/db/questions";
+import { Image, Alert } from '~/components/shared';
+import { QUESTIONS } from '~/db/questions';
 
 export default component$(() => {
+  const start = useSignal<boolean>(false)
   const answers = useSignal<Array<any>>([]);
   const question = useSignal(null);
   const isCorrect = useSignal(null);
@@ -20,18 +21,21 @@ export default component$(() => {
   });
 
   useTask$(async ({ track }) => {
-    
     track(() => question.value);
-    disabledAnswers.value = false;
-    isCorrect.value = null;
-    const selectQuestion = Math.floor(Math.random() * QUESTIONS.length);
-    const orderElements = await answerOrderDefine();
-    
-    answers.value = (orderElements).map((item) => {
-      return QUESTIONS[selectQuestion].answers[item];
-    });
+    track(() => start.value);
 
-    question.value = QUESTIONS[selectQuestion];
+    if (start.value) {
+      disabledAnswers.value = false;
+      isCorrect.value = null;
+      const selectQuestion = Math.floor(Math.random() * QUESTIONS.length);
+      const orderElements = await answerOrderDefine();
+  
+      answers.value = orderElements.map((item) => {
+        return QUESTIONS[selectQuestion].answers[item];
+      });
+  
+      question.value = QUESTIONS[selectQuestion];
+    }
   });
 
   return (
@@ -40,26 +44,41 @@ export default component$(() => {
       <p>El juego consiste en seleccionar una opción válida</p>
       <br />
 
+      { !start.value ? (
+        <div class='container'>
+          <p>Pulsa para iniciar la partida</p>
+          <div class='flex-container'>
+            <div
+              class={'answer new_answer'}
+              onClick$={() => (start.value = true)}
+            >
+              Iniciar
+            </div>
+          </div>
+        </div>
+      ): undefined}
+
       {question.value ? (
-        <div class="container">
-          <div class="question">
+        <div class='container'>
+          <div class='question'>
             <Image
-              src={question.value["content"]}
+              src={question.value['content']}
               size={{ width: 147, height: 110 }}
-              alt={"¿De dónde es la bandera"}
+              alt={'¿De dónde es la bandera'}
             />
           </div>
           {isCorrect.value ? (
-            <Alert text={"¡Qué bien, has acertado!"} type="success" />
+            <Alert text={'¡Qué bien, has acertado!'} type='success' />
           ) : isCorrect.value === false ? (
-            <Alert text={"¡Lo siento, NO has acertado!"} type="danger" />
+            <Alert text={'¡Lo siento, NO has acertado!'} type='danger' />
           ) : undefined}
           {disabledAnswers.value ? (
             <>
-              <div class="flex-container">
+              <div class='flex-container'>
                 <div
-                  class={"answer new_answer"}
+                  class={'answer new_answer'}
                   onClick$={() => (question.value = null)}
+                  key={'new_answer_btn'}
                 >
                   Cargar nueva pregunta
                 </div>
@@ -74,13 +93,13 @@ export default component$(() => {
                 return (
                   <div
                     class={
-                      "flex-container" +
-                      ((disabledAnswers.value && " disabled") || "")
+                      'flex-container' +
+                      ((disabledAnswers.value && ' disabled') || '')
                     }
-                    key={"answer_" + index}
+                    key={'answer_' + index}
                   >
-                    <div class="answer" onClick$={() => selectOption(index)}>
-                      {item["content"]}
+                    <div class='answer' onClick$={() => selectOption(index)}>
+                      {item['content']}
                     </div>
                   </div>
                 );
@@ -93,47 +112,46 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Qwik Book - Quizz App",
+  title: 'Qwik Book - Quizz App',
   meta: [
     {
-      name: "description",
+      name: 'description',
+      content: 'Proyecto de preguntas y respuestas sobre banderas',
+    },
+    {
+      name: 'keywords',
+      content: 'qwik, qwik-book,quiz-app',
+    },
+    {
+      name: 'author',
+      content: 'Anartz Mugika Ledo',
+    },
+    {
+      name: 'og:image',
       content:
-        "Proyecto de preguntas y respuestas sobre banderas",
+        'https://jgengle.github.io/Leaflet/examples/quick-start/thumbnail.png',
     },
     {
-      name: "keywords",
-      content: "qwik, qwik-book,quiz-app",
+      name: 'og:url',
+      content: 'https://github.com/qwik-book/qwik-book-projects',
     },
     {
-      name: "author",
-      content: "Anartz Mugika Ledo",
-    },
-    {
-      name: "og:image",
+      name: 'twitter:image',
       content:
-        "https://jgengle.github.io/Leaflet/examples/quick-start/thumbnail.png",
+        'https://jgengle.github.io/Leaflet/examples/quick-start/thumbnail.png',
     },
     {
-      name: "og:url",
-      content: "https://github.com/qwik-book/qwik-book-projects",
+      name: 'twitter:card',
+      content: 'summary_large_image',
     },
     {
-      name: "twitter:image",
+      name: 'twitter:title',
+      content: 'Qwik - El libro',
+    },
+    {
+      name: 'twitter:description',
       content:
-        "https://jgengle.github.io/Leaflet/examples/quick-start/thumbnail.png",
-    },
-    {
-      name: "twitter:card",
-      content: "summary_large_image",
-    },
-    {
-      name: "twitter:title",
-      content: "Qwik - El libro",
-    },
-    {
-      name: "twitter:description",
-      content:
-        "Aprende Qwik desde 0 paso a paso aplicando conceptos teórico-prácticas hasta publicar nuestros proyectos",
+        'Aprende Qwik desde 0 paso a paso aplicando conceptos teórico-prácticas hasta publicar nuestros proyectos',
     },
   ],
 };
